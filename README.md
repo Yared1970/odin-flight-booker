@@ -1,4 +1,4 @@
-# README
+ This is a simple blog called "odin flight booker" of the Odin Project
 
 This README would normally document whatever steps are necessary to get the
 application up and running.

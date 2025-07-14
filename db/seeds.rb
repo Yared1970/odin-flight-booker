@@ -7,3 +7,9 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
+# db/seeds.rb
+airport_codes = %w[SFO NYC LAX DEN ATL MIA BOS]
+
+airport_codes.each do |code|
+  Airport.find_or_create_by!(code: code)
+end

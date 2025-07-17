@@ -1,2 +1,51 @@
-<h1>Flights#index</h1>
-<p>Find me in app/views/flights/index.html.erb</p>
+<h1>Search Flights</h1>
+
+<%= form_with url: flights_path, method: :get, local: true do %>
+  <div>
+    <%= label_tag :departure_airport_id, "From:" %><br>
+    <%= select_tag :departure_airport_id,
+      options_from_collection_for_select(@airports, :id, :code, params[:departure_airport_id]),
+      prompt: "Select Departure Airport" %>
+  </div>
+
+  <div>
+    <%= label_tag :arrival_airport_id, "To:" %><br>
+    <%= select_tag :arrival_airport_id,
+      options_from_collection_for_select(@airports, :id, :code, params[:arrival_airport_id]),
+      prompt: "Select Arrival Airport" %>
+  </div>
+
+  <div>
+    <%= label_tag :passengers, "Passengers:" %><br>
+    <%= select_tag :passengers,
+      options_for_select((1..4).map { |n| [pluralize(n, 'passenger'), n] }, params[:passengers]),
+      prompt: "Select Number of Passengers" %>
+  </div>
+
+  <div>
+    <%= label_tag :date, "Flight Date:" %><br>
+    <%= select_tag :date,
+      options_for_select(@available_dates.map { |d| [d.strftime("%B %d, %Y"), d.to_s] }, params[:date]),
+      prompt: "Select Date" %>
+  </div>
+
+  <div>
+    <%= submit_tag "Search Flights" %>
+  </div>
+<% end %>
+
+<% if @flights.any? %>
+  <h2>Available Flights</h2>
+  <ul>
+    <% @flights.each do |flight| %>
+      <li>
+        <strong><%= flight.departure_airport.code %></strong> → <strong><%= flight.arrival_airport.code %></strong><br>
+        Departs: <%= flight.start_datetime.strftime("%B %d, %Y %I:%M %p") %><br>
+        Duration: <%= flight.flight_duration %> minutes
+      </li>
+    <% end %>
+  </ul>
+<% elsif params[:departure_airport_id].present? %>
+  <p>No flights found for your search.</p>
+<% end %>
+

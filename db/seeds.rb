@@ -9,53 +9,47 @@
 #   end
 # db/seeds.rb
 
+require 'time'
 
+# Airports to use
+airport_codes = %w[SFO NYC LAX DEN ATL]
+airports = airport_codes.map { |code| Airport.find_or_create_by!(code: code) }
 
-# Create airports
-Airport.create!(code: "SFO")
-Airport.create!(code: "NYC")
-Airport.create!(code: "LAX")
-Airport.create!(code: "DEN")
-Airport.create!(code: "ATL")
+# Time settings
+start_date = Date.today
+end_date = start_date + 7.days
+flight_hours = [ 6, 8, 10, 12, 14, 16, 18, 20, 22 ]  # Flights every ~2 hours
 
-# Define departure and arrival codes for flights
-departure_code = "SFO"
-arrival_code = "NYC"
+# Duration lookup (dummy values)
+durations = {
+  [ "SFO", "NYC" ] => 360,
+  [ "SFO", "LAX" ] => 90,
+  [ "NYC", "LAX" ] => 370,
+  [ "LAX", "DEN" ] => 120,
+  [ "ATL", "SFO" ] => 300,
+  [ "DEN", "ATL" ] => 180,
+  [ "NYC", "ATL" ] => 150,
+  [ "ATL", "LAX" ] => 320
+}
 
-# Only create if departure and arrival are different
-if departure_code != arrival_code
-  Flight.create!(
-    departure_airport: Airport.find_by(code: departure_code),
-    arrival_airport: Airport.find_by(code: arrival_code),
-    start_datetime: Time.parse("2025-08-01 09:00"),
-    flight_duration: 360
-  )
+  # Create flights for each pair of airports, each day, at multiple times
+  airport_codes.permutation(2).each do |from_code, to_code|
+  from_airport = Airport.find_by(code: from_code)
+  to_airport = Airport.find_by(code: to_code)
+  duration = durations[[ from_code, to_code ]] || rand(90..400)
+
+  (start_date..end_date).each do |date|
+    flight_hours.each do |hour|
+      start_time = Time.new(date.year, date.month, date.day, hour)
+
+      Flight.create!(
+        departure_airport: from_airport,
+        arrival_airport: to_airport,
+        start_datetime: start_time,
+        flight_duration: duration
+      )
+    end
+  end
 end
 
-
-if "NYC" != "LAX"
-  Flight.create!(
-    departure_airport: Airport.find_by(code: "NYC"),
-    arrival_airport: Airport.find_by(code: "LAX"),
-    start_datetime: Time.parse("2025-08-02 14:00"),
-    flight_duration: 370
-  )
-end
-
-if "LAX" != "DEN"
-  Flight.create!(
-    departure_airport: Airport.find_by(code: "LAX"),
-    arrival_airport: Airport.find_by(code: "DEN"),
-    start_datetime: Time.parse("2025-08-03 07:30"),
-    flight_duration: 120
-  )
-end
-
-if "ATL" != "SFO"
-  Flight.create!(
-    departure_airport: Airport.find_by(code: "ATL"),
-    arrival_airport: Airport.find_by(code: "SFO"),
-    start_datetime: Time.parse("2025-08-04 16:45"),
-    flight_duration: 300
-  )
-end
+puts "✅ Seeded many flights!"

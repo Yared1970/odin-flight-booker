@@ -1,4 +1,11 @@
-<h1>Search Flights</h1>
+<h1>Search for Flights</h1>
+
+<!-- Display alert message if airports are the same or any flash alert -->
+<% if flash[:alert] %>
+  <div class="alert" style="color: red; margin-bottom: 1em;">
+    <%= flash[:alert] %>
+  </div>
+<% end %>
 
 <%= form_with url: flights_path, method: :get, local: true do %>
   <div>
@@ -18,7 +25,7 @@
   <div>
     <%= label_tag :passengers, "Passengers:" %><br>
     <%= select_tag :passengers,
-      options_for_select((1..4).map { |n| [pluralize(n, 'passenger'), n] }, params[:passengers]),
+      options_for_select((1..4).map { |n| [pluralize(n, "passenger"), n] }, params[:passengers]),
       prompt: "Select Number of Passengers" %>
   </div>
 
@@ -26,26 +33,37 @@
     <%= label_tag :date, "Flight Date:" %><br>
     <%= select_tag :date,
       options_for_select(@available_dates.map { |d| [d.strftime("%B %d, %Y"), d.to_s] }, params[:date]),
-      prompt: "Select Date" %>
+      prompt: "Select a Date" %>
   </div>
 
-  <div>
-    <%= submit_tag "Search Flights" %>
-  </div>
+  <br>
+  <%= submit_tag "Search Flights" %>
 <% end %>
 
+<hr>
+
+<!-- Display flight results -->
 <% if @flights.any? %>
   <h2>Available Flights</h2>
-  <ul>
+
+  <%= form_with url: new_booking_path, method: :get, local: true do %>
     <% @flights.each do |flight| %>
-      <li>
-        <strong><%= flight.departure_airport.code %></strong> → <strong><%= flight.arrival_airport.code %></strong><br>
-        Departs: <%= flight.start_datetime.strftime("%B %d, %Y %I:%M %p") %><br>
-        Duration: <%= flight.flight_duration %> minutes
-      </li>
+      <div style="margin-bottom: 1em;">
+        <%= radio_button_tag :flight_id, flight.id %>
+        <%= label_tag "flight_id_#{flight.id}" do %>
+          <strong><%= flight.departure_airport.code %></strong> →
+          <strong><%= flight.arrival_airport.code %></strong><br>
+          Departs: <%= flight.start_datetime.strftime("%B %d, %Y at %I:%M %p") %><br>
+          Duration: <%= flight.flight_duration %> minutes
+        <% end %>
+      </div>
     <% end %>
-  </ul>
-<% elsif params[:departure_airport_id].present? %>
+
+    <!-- Pass number of passengers along as a hidden field -->
+    <%= hidden_field_tag :passengers, params[:passengers] %>
+
+    <%= submit_tag "Select Flight" %>
+  <% end %>
+<% elsif params[:departure_airport_id].present? && flash[:alert].blank? %>
   <p>No flights found for your search.</p>
 <% end %>
-

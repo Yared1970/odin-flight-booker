@@ -9,4 +9,6 @@ class Flight < ApplicationRecord
 
   scope :upcoming, -> { where("start_datetime > ?", Time.current) }
   scope :past, -> { where("start_datetime <= ?", Time.current) }
+
+  has_many :bookings, dependent: :destroy
 end

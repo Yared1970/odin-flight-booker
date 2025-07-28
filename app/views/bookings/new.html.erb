@@ -1,0 +1,25 @@
+<h1>Passenger Information</h1>
+
+<p>
+  <strong>Flight ID:</strong> <%= @flight.id %><br>
+  <strong>From:</strong> <%= @flight.departure_airport.code %><br>
+  <strong>To:</strong> <%= @flight.arrival_airport.code %><br>
+  <strong>Date:</strong> <%= @flight.start_datetime.strftime("%B %d, %Y at %I:%M %p") %><br>
+</p>
+
+<%= form_with model: @booking, url: bookings_path, local: true do |f| %>
+  <%= f.hidden_field :flight_id, value: @flight.id %>
+
+  <h2>Passenger Details</h2>
+  <%= f.fields_for :passengers do |p| %>
+    <div style="margin-bottom: 1em;">
+      <%= p.label :name, "Passenger Name" %><br>
+      <%= p.text_field :name %><br>
+
+      <%= p.label :email, "Email" %><br>
+      <%= p.email_field :email %>
+    </div>
+  <% end %>
+
+  <%= f.submit "Complete Booking" %>
+<% end %>

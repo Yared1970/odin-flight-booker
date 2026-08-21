@@ -16,15 +16,20 @@ class BookingsController < ApplicationController
   end
 
   def create
-    @booking = Booking.new(booking_params)
+  @booking = Booking.new(booking_params)
 
-    if @booking.save
-      redirect_to booking_path(@booking), notice: "Booking created successfully!"
-    else
-      flash.now[:alert] = "There was a problem creating the booking."
-      render :new, status: :unprocessable_entity
+  if @booking.save
+    @booking.passengers.each do |passenger|
+      PassengerMailer.with(passenger: passenger)
+                     .booking_confirmation
+                     .deliver_now
     end
+
+    redirect_to @booking
+  else
+    render :new, status: :unprocessable_entity
   end
+end
 
   def show
     @booking = Booking.find(params[:id])
